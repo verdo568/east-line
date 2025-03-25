@@ -14,5 +14,5 @@ def EastLineStatic:
         static = turnHead
     }
     elif(static == turnHead){
-        
+        #12321231231123
     }
