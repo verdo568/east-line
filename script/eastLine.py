@@ -13,10 +13,8 @@ maxTime = 15
 status = write
 
 def EastLineStatus():
-    if(static == write){
+    if(static == write):
         time.sleep(random.randint(minTime, maxTime))
         static = turnHead
-    }
-    elif(static == turnHead){
+    elif(static == turnHead):
         #12321231231123
-    }
