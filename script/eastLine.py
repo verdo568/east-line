@@ -18,3 +18,4 @@ def EastLineStatus():
         static = turnHead
     elif(static == turnHead):
         #12321231231123
+        pass
