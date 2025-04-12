@@ -350,6 +350,7 @@ class Menu:
                 screen.blit(button_text, button_rect)
                 if EventType.mouseLeftButtonDown and button_rect.collidepoint(pygame.mouse.get_pos()):
                     webbrowser.open("https://csy-games.itch.io/end-of-light")
+                    pygame.time.delay(1000)
 
                 button_text = font48.render("返回", True, "#000000", "#c0c0c0")
                 button_rect = button_text.get_rect(center=(screen_rect.centerx, screen_rect.centery+300))
