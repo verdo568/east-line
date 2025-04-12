@@ -29,6 +29,7 @@ class Scene:
     inGame = 2
     gameOver = 3
     success = 4
+    ui = 5
 
 class EventType:
     mouseLeftButtonDown = 0
@@ -54,8 +55,34 @@ class Player:
         image_rect = self.image.get_rect(center=screen_rect.center)
         screen.blit(self.image, image_rect)
 
+class EventText:
+    #text = [標題, 副標題, 選項1按鈕, 選項1標題, 選項1敘述, 選項2按鈕, 選項2標題, 選項2敘述]
+    text = [['突發事件:', '你是值日生被老師叫去倒垃圾', '好!我去', '值日之神', '放下遊戲進度，衝出去倒垃圾; 效果: 1.遊戲進度倒退', '不要!垃圾還沒滿', '但是我拒絕', '不去倒垃圾; 效果: 老師放下粉筆機率增加']
+            ,['突發事件:', '你被老師刁難了', '學分送你啦!乞丐!', '學分戰士', '直接嗆他; 效果: 1.遊戲速度加快 2.老師放下粉筆機率增加', '......', '沉默', '無效果']
+            ,['突發事件:', '老師解不出題目要你幫忙', '老師好菜喔!', '菜就多練', '老師被激怒; 效果: 趕課Level加一', '這題簡單!', '數學電神', '放下遊戲，快速找到老師算錯的地方; 效果: 遊戲進度倒退']]
+
 class SpecialEvent:
-    def type1():
+    def buff(progressBar, eastLine, choice, eventId):
+        match eventId:
+            case 0:
+                if choice == 1:
+                    progressBar.step -= 80
+                else:
+                    eastLine.timeBuff *= 0.75
+            case 1:
+                if choice == 1:
+                    progressBar.delayTime -= 50
+                    eastLine.timeBuff *= 0.75
+                else:
+                    pass
+            case 2:
+                if choice == 1:
+                    progressBar.addLevel += 1
+                else:
+                    progressBar.step -= 160
+                    
+    def type(progressBar, eastLine, eventId):
+        textList = EventText.text[eventId]
         onEvent = True
         while onEvent:
             for event in pygame.event.get():
@@ -64,29 +91,49 @@ class SpecialEvent:
                 elif event.type == pygame.MOUSEBUTTONUP:
                     EventType.mouseLeftButtonDown = False
             screen.fill((255, 255, 255))
-            text = font72.render("突發事件:" ,True, '#000000')
+
+            #標題
+            text = font72.render(textList[0] ,True, '#000000')
             screen.blit(text, text.get_rect(center=(screen_rect.centerx, screen_rect.centery-200)))
-            text = font24.render("你被老師刁難了", True, '#000000')
+
+            #副標題
+            text = font24.render(textList[1], True, '#000000')
             screen.blit(text, text.get_rect(center=(screen_rect.centerx, screen_rect.centery-100)))
-            #選項1
-            button_text = font48.render("學分戰士", True, "#000000", "#c0c0c0")
-            button_rect = button_text.get_rect(center=(screen_rect.centerx-300, screen_rect.centery+300))
-            screen.blit(button_text, button_rect)
-            text = font24.render("'學分送你啦!乞丐!'", True, "#000000")
+
+            #選項1按鈕
+            button1_text = font48.render(textList[2], True, "#000000", "#c0c0c0")
+            button1_rect = button1_text.get_rect(center=(screen_rect.centerx-300, screen_rect.centery+300))
+            screen.blit(button1_text, button1_rect)
+
+            #選項1標題
+            text = font24.render(textList[3], True, "#000000")
             screen.blit(text, text.get_rect(center=(screen_rect.centerx-300, screen_rect.centery+200)))
-            text = font24.render("直接嗆他；Buff遊戲進度加快；Debuff獲得老師特別關照", True, '#000000')
+
+            #選項1技能敘述
+            text = font24.render(textList[4], True, '#000000')
             screen.blit(text, text.get_rect(center=(screen_rect.centerx-300, screen_rect.centery+240)))
-            #選項2
-            button_text = font48.render("保持沉默", True, "#000000", "#c0c0c0")
-            button_rect = button_text.get_rect(center=(screen_rect.centerx+300, screen_rect.centery+300))
-            screen.blit(button_text, button_rect)
-            text = font24.render("無效果", True, '#000000')
+
+            #選項2按鈕
+            button2_text = font48.render(textList[5], True, "#000000", "#c0c0c0")
+            button2_rect = button2_text.get_rect(center=(screen_rect.centerx+300, screen_rect.centery+300))
+            screen.blit(button2_text, button2_rect)
+
+            #選項2標題
+            text = font24.render(textList[6], True, "#000000")
+            screen.blit(text, text.get_rect(center=(screen_rect.centerx+300, screen_rect.centery+200)))
+
+            #選項2技能敘述
+            text = font24.render(textList[7], True, '#000000')
             screen.blit(text, text.get_rect(center=(screen_rect.centerx+300, screen_rect.centery+240)))
+
             pygame.display.update()
-            if EventType.mouseLeftButtonDown and button_rect.collidepoint(pygame.mouse.get_pos()):
+            if EventType.mouseLeftButtonDown and button1_rect.collidepoint(pygame.mouse.get_pos()):
+                SpecialEvent.buff(progressBar, eastLine, 1, eventId)
                 onEvent = False
-            if EventType.mouseLeftButtonDown and button_rect.collidepoint(pygame.mouse.get_pos()):
+            if EventType.mouseLeftButtonDown and button2_rect.collidepoint(pygame.mouse.get_pos()):
+                SpecialEvent.buff(progressBar, eastLine, 2, eventId)
                 onEvent = False
+
 #東線
 class EastLine:
     def __init__(self):
@@ -103,6 +150,7 @@ class EastLine:
         self.statusTimer = pygame.time.get_ticks()
         self.animationDelayTime = 400
         self.firstSwitch = True
+        self.timeBuff = 1
     #切換狀態
     def update(self, progressBar):
         fixTime = 1 / (1 + progressBar.level / 4)
@@ -117,7 +165,7 @@ class EastLine:
                     self.image = Image.EastLine_writting[self.WriteId]
                 if self.firstSwitch:
                     self.firstSwitch = False
-                    self.statusTimer = pygame.time.get_ticks() + random.randint(int(3000 * fixTime), int(6000 * fixTime))
+                    self.statusTimer = pygame.time.get_ticks() + random.randint(int(3000 * fixTime * self.timeBuff), int(6000 * fixTime * self.timeBuff))
                 #切換
                 if pygame.time.get_ticks() > self.statusTimer:
                     self.status = self.down
@@ -125,10 +173,6 @@ class EastLine:
             #放下粉筆
             case self.down:
                 self.image = Image.EastLine_down
-                if random.randint(1, 10) == 1:
-                    SpecialEvent.type1()
-                    self.status = self.write
-                    return
                 if self.firstSwitch:
                     self.firstSwitch = False
                     self.statusTimer = pygame.time.get_ticks() + random.randint(int(700 * fixTime), int(1500 * fixTime))
@@ -174,7 +218,9 @@ class ProgressBar:
         self.delayTime = 100
         self.lookUp = False
         self.level = 1
-    def update(self):
+        self.addLevel = 0
+        self.event = [0, 0, 0]
+    def update(self, eastLine):
         userInput = pygame.key.get_pressed()
         if userInput[pygame.K_SPACE] == True:
             self.lookUp = True
@@ -188,7 +234,7 @@ class ProgressBar:
         height = 20
         buttom = screen_rect.bottom
         top = screen_rect.top
-        self.level = self.step//80 + 1
+        self.level = self.step//80 + 1 + self.addLevel
         pygame.draw.rect(screen, "#c0c0c0", (left, buttom - 50, width, height))
         if self.lookUp:
             pygame.draw.rect(screen, "#ff0000", (left, buttom - 50, min(self.step, width), height))
@@ -197,6 +243,23 @@ class ProgressBar:
         progress = min(float(self.step/8), 100)
         if progress >= 100:
             Scene.nowScene = Scene.success
+
+        if progress >= 30 and self.event[0] == False:
+            self.event[0] = True
+            SpecialEvent.type(self, eastLine, 0)
+            eastLine.firstSwitch = True
+            eastLine.status = eastLine.write
+        if progress >= 50 and self.event[1] == False:
+            self.event[1] = True
+            SpecialEvent.type(self, eastLine, 1)
+            eastLine.firstSwitch = True
+            eastLine.status = eastLine.write
+        if progress >= 80 and self.event[2] == False:
+            self.event[2] = True
+            SpecialEvent.type(self, eastLine, 2)
+            eastLine.firstSwitch = True
+            eastLine.status = eastLine.write
+
         text = font24.render(f'進度: {progress:.1f}%', True, '#000000')
         screen.blit(text, (left + width + 5, buttom - 55))
         text = font24.render(f'趕課等級: Level {self.level}', True, '#000000')
@@ -242,11 +305,59 @@ class Menu:
         if EventType.mouseLeftButtonDown and button_rect.collidepoint(pygame.mouse.get_pos()):
             Scene.nowScene = Scene.inGame
             Scene.init = True
-        ad_button_text = font48.render("教學影片", True, "#000000", "#c0c0c0")
-        ad_button_rect = ad_button_text.get_rect(center=screen_rect.center)
+        howPlay_button_text = font48.render("操作方法", True, "#000000", "#c0c0c0")
+        howPlay_button_rect = howPlay_button_text.get_rect(center=screen_rect.center)
+        screen.blit(howPlay_button_text, howPlay_button_rect)
+        if EventType.mouseLeftButtonDown and howPlay_button_rect.collidepoint(pygame.mouse.get_pos()):
+            howPlay = True
+            while howPlay:
+                screen.fill((255, 255, 255))
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        EventType.mouseLeftButtonDown = True
+                    elif event.type == pygame.MOUSEBUTTONUP:
+                        EventType.mouseLeftButtonDown = False
+                text = font72.render("操作方法" ,True, '#000000')
+                screen.blit(text, text.get_rect(center=(screen_rect.centerx, screen_rect.centery-200)))
+                text = font24.render("按住空白鍵切換上課姿勢", True, '#000000')
+                screen.blit(text, text.get_rect(center=(screen_rect.centerx, screen_rect.centery-100)))
+                button_text = font48.render("返回", True, "#000000", "#c0c0c0")
+                button_rect = button_text.get_rect(center=(screen_rect.centerx, screen_rect.centery+300))
+                screen.blit(button_text, button_rect)
+                pygame.display.update()
+                if EventType.mouseLeftButtonDown and button_rect.collidepoint(pygame.mouse.get_pos()):
+                    howPlay = False
+        
+        ad_button_text = font48.render("觀看廣告", True, "#000000", "#c0c0c0")
+        ad_button_rect = ad_button_text.get_rect(center=(screen_rect.centerx, screen_rect.centery+100))
         screen.blit(ad_button_text, ad_button_rect)
         if EventType.mouseLeftButtonDown and ad_button_rect.collidepoint(pygame.mouse.get_pos()):
-            webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+            ad = True
+            while ad:
+                screen.fill((255, 255, 255))
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        EventType.mouseLeftButtonDown = True
+                    elif event.type == pygame.MOUSEBUTTONUP:
+                        EventType.mouseLeftButtonDown = False
+
+                text = font48.render("同作者遊戲: 光照窮途End of Light DEMO版已推出" ,True, '#000000')
+                text_rect = text.get_rect(center=(screen_rect.centerx, screen_rect.centery-100))
+                screen.blit(text, text_rect)
+
+                button_text = font48.render("遊玩連結", True, "#000000", "#c0c0c0")
+                button_rect = button_text.get_rect(center=(screen_rect.centerx, screen_rect.centery+200))
+                screen.blit(button_text, button_rect)
+                if EventType.mouseLeftButtonDown and button_rect.collidepoint(pygame.mouse.get_pos()):
+                    webbrowser.open("https://csy-games.itch.io/end-of-light")
+
+                button_text = font48.render("返回", True, "#000000", "#c0c0c0")
+                button_rect = button_text.get_rect(center=(screen_rect.centerx, screen_rect.centery+300))
+                screen.blit(button_text, button_rect)
+
+                pygame.display.update()
+                if EventType.mouseLeftButtonDown and button_rect.collidepoint(pygame.mouse.get_pos()):
+                    ad = False
 
 def main():
     player = Player()
@@ -278,7 +389,7 @@ def main():
                 screen.fill((255, 255, 255))
                 player.update()
                 eastline.update(progressBar)
-                progressBar.update()
+                progressBar.update(eastline)
             case Scene.gameOver:
                 screen.fill((255, 255, 255))
                 gameOver.update()
