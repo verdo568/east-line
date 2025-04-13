@@ -1,3 +1,3 @@
 # 東線課上玩手機
 ## 下載連結
-https://github.com/verdo568/east-line/tree/main/executable%20file
+[點我下載](https://github.com/verdo568/east-line/releases/download/v1.0/default.zip)
